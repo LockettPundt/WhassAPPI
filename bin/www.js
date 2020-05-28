@@ -1,13 +1,16 @@
-#!/usr/bin/env node
+/* eslint-disable import/order */
+// #!/usr/bin/env node
 
 /**
  * Module dependencies.
  */
 require('dotenv').config();
 
-const app = require('../app');
+
 const debug = require('debug')('whasssappapi:server');
 const http = require('http');
+const app = require('../app');
+
 
 /**
  * Get port from environment and store in Express.
@@ -19,10 +22,23 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
-
 const server = http.createServer(app);
 
+const io = require('socket.io')(server);
 
+
+io.on('connection', (socket) => {
+  socket.on('join', (data) => {
+    console.log(data);
+    console.log(`${data.firstName} has joined ${data.chatRoom}`);
+    socket.join(data.chatRoom);
+    io.emit('roomJoined', data.chatRoom);
+  });
+  socket.on('message', (data) => {
+    console.log(data);
+    io.emit('newMessage', data);
+  });
+});
 /**
  * Listen on provided port, on all network interfaces.
  */
