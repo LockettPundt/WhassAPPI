@@ -30,13 +30,17 @@ const io = require('socket.io')(server);
 io.on('connection', (socket) => {
   socket.on('join', (data) => {
     console.log(data);
-    console.log(`${data.firstName} has joined ${data.chatRoom}`);
+    console.log(`${data.userName} has joined ${data.chatRoomName}`);
     socket.join(data.chatRoom);
-    io.emit('roomJoined', data.chatRoom);
+    io.emit('roomJoined', data.chatRoomName);
   });
   socket.on('message', (data) => {
-    console.log(data);
-    io.emit('newMessage', data);
+    console.log('message data', data);
+    io.emit(`${data.chatRoomName}newMessage`, data);
+  });
+  socket.on('typing', (data) => {
+    console.log('typing socket', data);
+    io.emit(`${data.chatRoomName}typing`, data);
   });
 });
 /**
