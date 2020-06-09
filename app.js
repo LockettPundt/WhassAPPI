@@ -3,12 +3,21 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
-
+const mongoose = require('mongoose');
 const indexRouter = require('./routes/index');
 const apiRouter = require('./routes/api');
-
+require('dotenv').config();
 
 const app = express();
+
+
+mongoose.connect(process.env.DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  dbName: process.env.DB_NAME,
+})
+  .then(() => console.log('connected'))
+  .catch((err) => console.log(err));
 
 
 const corsOptions = {

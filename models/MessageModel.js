@@ -2,16 +2,13 @@ const mongoose = require('mongoose');
 
 
 const MessageModel = new mongoose.Schema({
-  firstName: {
-    type: String,
-  },
-  lastName: {
+  userName: {
     type: String,
   },
   messageTime: {
     type: String,
   },
-  chatRoom: {
+  chatRoomName: {
     type: String,
   },
   message: {
@@ -20,4 +17,4 @@ const MessageModel = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('message', MessageModel);
+module.exports = mongoose.model('messages', MessageModel);
