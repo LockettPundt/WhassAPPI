@@ -6,11 +6,39 @@ const moment = require('moment');
 const router = express.Router();
 
 const MessageModel = require('../models/MessageModel');
+const ChatRoomModel = require('../models/ChatRoomModel');
 
 // create chat room.
 
-router.post('/create', (req, res) => {
-  res.sendStatus(200);
+router.post('/create', async (req, res) => {
+  const {
+    chatRoomName,
+    dateCreated,
+    lastAccess,
+    password,
+  } = req.body.chatRoomInfo;
+
+
+  try {
+    const roomNameCheck = await ChatRoomModel.findOne({ chatRoomName });
+    console.log(roomNameCheck);
+    if (!roomNameCheck) {
+      const newChatRoom = new ChatRoomModel({
+        chatRoomName,
+        dateCreated,
+        lastAccess,
+        password,
+      });
+      const roomToPost = await newChatRoom.save();
+      res.json(roomToPost);
+    }
+    if (roomNameCheck) {
+      res.json({ error: 'Room name is already in use.' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
 });
 
 // join chat room
