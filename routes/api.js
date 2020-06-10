@@ -1,22 +1,68 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const bcyrpt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const moment = require('moment');
 
 const router = express.Router();
 
 const MessageModel = require('../models/MessageModel');
+const ChatRoomModel = require('../models/ChatRoomModel');
 
 // create chat room.
 
-router.post('/create', (req, res) => {
-  res.sendStatus(200);
+router.post('/create', async (req, res) => {
+  const {
+    chatRoomName,
+    dateCreated,
+    lastAccess,
+    password,
+  } = req.body.chatRoomInfo;
+
+  try {
+    const roomNameCheck = await ChatRoomModel.findOne({ chatRoomName });
+    // console.log(roomNameCheck);
+    if (!roomNameCheck) {
+      const salt = bcrypt.genSaltSync(10);
+      const hash = bcrypt.hashSync(password, salt);
+      const newChatRoom = new ChatRoomModel({
+        chatRoomName,
+        dateCreated,
+        lastAccess,
+        password: hash,
+      });
+
+      const roomToPost = await newChatRoom.save();
+      res.json(roomToPost);
+    }
+    if (roomNameCheck) {
+      res.json({ error: 'Room name is already in use.' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
 });
 
-// join chat room
+// join chat room.
 
-router.post('/join', (req, res) => {
-  res.send(200);
+router.post('/join', async (req, res) => {
+  const { chatRoomName, password } = req.body.userInfo;
+  console.log(chatRoomName, password);
+  try {
+    const getChatRoom = await ChatRoomModel.findOne({ chatRoomName });
+    console.log('here is the room: ', getChatRoom);
+    if (getChatRoom) {
+      const match = bcrypt.compareSync(password, getChatRoom.password);
+      console.log(match);
+      if (match) res.json({ success: 'Correct name and password.' });
+      else res.json({ error: 'Incorrect password.' });
+    }
+    if (!getChatRoom) {
+      res.json({ error: 'No room by that name.' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json(error);
+  }
 });
 
 router.post('/messages', async (req, res) => {
@@ -41,7 +87,7 @@ router.post('/messages', async (req, res) => {
   }
 });
 
-// get message history
+// get message history.
 
 router.get('/chathistory/:room?', async (req, res) => {
   const { room } = req.params;
